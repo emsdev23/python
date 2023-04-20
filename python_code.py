@@ -21,6 +21,11 @@ conn = mysql.connector.connect(
 )
 cursor = conn.cursor()
 
+# Initialize MQTT client
+mqtt_client = mqtt.Client()
+mqtt_client.username_pw_set(username=mqtt_username, password=mqtt_password)
+mqtt_client.connect(broker_address, broker_port)
+
 # Loop to periodically fetch and publish new data
 while True:
     # Fetch data from the database
@@ -37,16 +42,22 @@ while True:
         json_data = json.dumps(data_dict)
         print(json_data)
 
-        # Publish data to MQTT topic
-        mqtt_client = mqtt.Client()
-        mqtt_client.username_pw_set(username=mqtt_username, password=mqtt_password)
-        mqtt_client.connect(broker_address, broker_port)
-        mqtt_client.publish(mqtt_topic_publish, json_data)
-        mqtt_client.disconnect()
+        try:
+            # Publish data to MQTT topic
+            mqtt_client.publish(mqtt_topic_publish, json_data)
+
+        except Exception as e:
+            print(f"An error occurred while publishing to MQTT: {e}")
+            print("Attempting to reconnect to MQTT broker...")
+
+            # Reconnect to MQTT broker
+            mqtt_client.reconnect()
+            mqtt_client.publish(mqtt_topic_publish, json_data)
 
     # Commit changes to database
     conn.commit()
 
     time.sleep(2)
+
 
 
