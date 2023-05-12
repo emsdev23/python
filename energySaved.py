@@ -2,7 +2,8 @@ import mysql.connector
 import time
 from datetime import datetime, timedelta
 
-processeddb = mysql.connector.connect(
+while True:
+        processeddb = mysql.connector.connect(
         host="121.242.232.151",
         user="bmsrouser6",
         password="bmsrouser6@151",
@@ -10,7 +11,7 @@ processeddb = mysql.connector.connect(
         port=3306
         )
 
-unprocesseddb = mysql.connector.connect(
+        unprocesseddb = mysql.connector.connect(
         host="121.242.232.151",
         user="bmsrouser6",
         password="bmsrouser6@151",
@@ -18,15 +19,13 @@ unprocesseddb = mysql.connector.connect(
         port=3306
       )
 
-ubuntudb = mysql.connector.connect(
-        host="10.9.211.140",
-        user="ganesh",
-        password="Tenet@123",
+        ubuntudb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="22@teneT",
         database='EMS',
         port=3306
-        )
-
-while True:
+      )
         proscur = processeddb.cursor()
         
         unpdbcursor1 = unprocesseddb.cursor()

@@ -2,23 +2,22 @@ import mysql.connector
 import time
 from datetime import datetime, timedelta
 
-processeddb = mysql.connector.connect(
-  host="121.242.232.151",
-  user="bmsrouser6",
-  password="bmsrouser6@151",
-  database='bmsmgmt_olap_prod_v13',
-  port=3306
-)
-
-ubuntudb = mysql.connector.connect(
-  host="10.9.211.140",
-  user="ganesh",
-  password="Tenet@123",
-  database='EMS',
-  port=3306
-)
-
 while True:
+    processeddb = mysql.connector.connect(
+        host="121.242.232.151",
+        user="bmsrouser6",
+        password="bmsrouser6@151",
+        database='bmsmgmt_olap_prod_v13',
+        port=3306
+        )
+
+    ubuntudb = mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="22@teneT",
+        database='EMS',
+        port=3306
+      )
     proscur = processeddb.cursor()
 
     proscur.execute("""select FLOOR(acmeterenergy),polledTime from bmsmgmt_olap_prod_v13.MVPPolling where mvpnum in ("MVP1","MVP2","MVP3","MVP4") and Date(polledTime) = curdate();""")
@@ -29,10 +28,14 @@ while True:
 
     for datum in data:
         minute_list.append(datum)
+        #print(datum[0])
         
     datetimes = [datetime.strptime(str(item[1]), '%Y-%m-%d %H:%M:%S') for item in minute_list]
 
-    start_time = datetimes[0].replace(second=0, microsecond=0)
+    try:
+        start_time = datetimes[0].replace(second=0, microsecond=0)
+    except IndexError:
+        continue
     end_time = (datetimes[-1] + timedelta(minutes=1)).replace(second=0, microsecond=0)
 
 
@@ -75,16 +78,16 @@ while True:
     values = (polledDate,energy)
     try:
         ubuncur.execute(sql,values)
-        print("Grid data added")
+        print("Grid data added",energy)
         ubuntudb.commit()
     except mysql.connector.IntegrityError:
         sql = """UPDATE GridProcessed SET Energy = %s WHERE polledDate= %s;"""
         values = (energy,polledDate)
         ubuncur.execute(sql,values)
-        print("Grid data updated")
+        print("Grid data updated",energy)
         ubuntudb.commit()
         
-    time.sleep(10)
+    time.sleep(120)
 
 
      
